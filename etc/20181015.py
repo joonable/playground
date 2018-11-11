@@ -33,8 +33,8 @@ df_3 = pd.DataFrame(
           ["선수현", "f", "디지털 엑셀러레이션팀"],
           ["이승준", "m", "COE"],
           ["정은성", "m", "microSVC"]],
-    columns=["name", "sex", "index"]
-    , index=[0,1,2,3,4,5,6,7,8]
+    columns=["name", "sex", "index"],
+    index=[0,1,2,3,4,5,6,7,8]
 )
 
 square = 0
@@ -90,52 +90,69 @@ type(df.columns)
 # {"name": "이승준", "sex": "m", "department": "COE"}
 # {"name": "정은성", "sex": "m", "department": "microSVC"}
 
-df
-df['name']
-df['department']
-df['sex']
+# df
+# df['name']
+# df['department']
+# df['sex']
+#
+# df.index
+# df.columns
+#
+# df.loc[[2, 4, 5, 7], ['name', 'sex']]
+# df.iloc[[2, 4, 5, 7], [0, 2]]
+#
+# df.loc[:, 'name']
+# df.iloc[:, 0]
+#
+# df.loc[8], df.loc[8. :]
+# df.iloc[8], df.iloc[8, :]
+#
+#
+# # 특정한 컬럼에서 some_value을 가진 값만 뽑아내기
+# df.loc[df['column_name'] == some_value]
+# df.loc[df['column_name'] != some_value]
+#
+# # 특정한 컬럼에서 some_values(복수)를 가진 값만 뽑아내기
+# df.loc[df['column_name'].isin(some_values)]
+# df.loc[~df['column_name'].isin(some_values)]
+#
+# # 한번에 여러 개의 조건을 적용시켜 뽑아내기
+# df.loc[(df['column_name'] == some_value) & df['other_column'].isin(some_values)]
+# df.loc[df['column_name'] == some_value].loc[df['other_column'].isin(some_values)]
+#
+#
+# # isin returns a boolean Series, so to select rows whose value is not in some_values, negate the boolean Series using ~:
+#
+#
+#
+# df.loc[df['sex'] == 'm']
+# df.loc[df['sex'] != 'f']
+# df.iloc[:, 0]
+# df.loc[df['sex'] == 'm', :]
+#
+#
+# df.loc[df['department'].isin(['IT개발팀', 'DM팀', 'COE', 'microSVC']), ['department', 'name']]
+# df.loc[~df['department'].isin(['영상제작1팀', '고객서비스팀', '트랜드패션팀', '디지털 엑셀러레이션팀']), ['department', 'name']]
+#
+# df.loc[df['department'].isin(['IT개발팀', '고객서비스팀']) & (df['sex'] == 'f'), ['name']]
+# df.loc[df['department'].isin(['IT개발팀', '고객서비스팀'])].loc[df['sex'] == 'f'][['name']]
+#
+# 'column_name'
+# [3]
 
-df.index
-df.columns
+col_dict = {"name": "이름", "department": "부서", "untitled" : "무제"}
+index_dict = {0: "zero", 4: "four", 10: "ten"}
+df = df.rename(col_dict, axis=1)
+df = df.rename(index_dict, axis=0)
 
-df.loc[[2, 4, 5, 7], ['name', 'sex']]
-df.iloc[[2, 4, 5, 7], [0, 2]]
+string = ' xoxo love xoxo   '
 
-df.loc[:, 'name']
-df.iloc[:, 0]
-
-df.loc[8], df.loc[8. :]
-df.iloc[8], df.iloc[8, :]
+# Leading whitepsace are removed
+print(string.strip())
 
 
-# 특정한 컬럼에서 some_value을 가진 값만 뽑아내기
-df.loc[df['column_name'] == some_value]
-df.loc[df['column_name'] != some_value]
+df['new_col'] = df['col_name'].apply(lambda x: x)
 
-# 특정한 컬럼에서 some_values(복수)를 가진 값만 뽑아내기
-df.loc[df['column_name'].isin(some_values)]
-df.loc[~df['column_name'].isin(some_values)]
-
-# 한번에 여러 개의 조건을 적용시켜 뽑아내기
-df.loc[(df['column_name'] == some_value) & df['other_column'].isin(some_values)]
-df.loc[df['column_name'] == some_value].loc[df['other_column'].isin(some_values)]
-
-
-# isin returns a boolean Series, so to select rows whose value is not in some_values, negate the boolean Series using ~:
-
-
-
-df.loc[df['sex'] == 'm']
-df.loc[df['sex'] != 'f']
-df.iloc[:, 0]
-df.loc[df['sex'] == 'm', :]
-
-
-df.loc[df['department'].isin(['IT개발팀', 'DM팀', 'COE', 'microSVC']), ['department', 'name']]
-df.loc[~df['department'].isin(['영상제작1팀', '고객서비스팀', '트랜드패션팀', '디지털 엑셀러레이션팀']), ['department', 'name']]
-
-df.loc[df['department'].isin(['IT개발팀', '고객서비스팀']) & (df['sex'] == 'f'), ['name']]
-df.loc[df['department'].isin(['IT개발팀', '고객서비스팀'])].loc[df['sex'] == 'f'][['name']]
-
-'column_name'
-[3]
+new_list = []
+for x in any_list:
+    new_list.append(x)
