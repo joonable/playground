@@ -151,8 +151,35 @@ string = ' xoxo love xoxo   '
 print(string.strip())
 
 
-df['new_col'] = df['col_name'].apply(lambda x: x)
+df['new'] = df['col'].apply(lambda x: any_func(x))
 
 new_list = []
 for x in any_list:
     new_list.append(x)
+
+df['new_col'] = df['col_name'].apply(lambda x: x)
+
+df['new'] = df['col'].apply(lambda x: any_func(x))
+
+def any_func(x):
+    x = ...
+    return x
+
+df = df.apply(lambda x: any_func(x), axis=1)
+
+
+df = pd.DataFrame(data=['2017.03.27', '2016.08.06', '2016.05.08',
+                        '2018.06.02', '2017.08.22', '2015.05.26',
+                        '2017.08.25', '2015.11.08', '2017.11.22',
+                        '2018.10.17'], columns=['date'])
+
+
+def parse_date(row):
+    the_date = row.date
+    row['year'] = int(the_date[:4])
+    row['month'] = int(the_date[5:7])
+    row['day'] = int(the_date[-2:])
+    return row
+
+
+df = df.apply(lambda row: parse_date(row), axis=1)
