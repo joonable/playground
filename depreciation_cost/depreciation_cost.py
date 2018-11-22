@@ -1,7 +1,9 @@
 # coding: utf-8
 import pandas as pd
 import datetime
-import sys
+
+std_year = ""   #TODO 기준년을 입력하세요
+excel_file = ""   #TODO 엑셀 파일 이름을 입력하세요 (같은 폴더 내에 위치해야함)
 
 column_dict = {
     '자산번호':'id',
@@ -68,8 +70,7 @@ def get_depre_month(row, std_year):
 
 
 if __name__ == '__main__':
-    std_year = sys.argv[1]
-    df = pd.read_excel('./depreciation_cost.xlsx')
+    df = pd.read_excel(excel_file)
 
     df.columns = [col.strip() for col in df.columns]
     df = df.rename(column_dict, axis=1)
