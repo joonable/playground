@@ -2,8 +2,8 @@
 import pandas as pd
 import datetime
 
-std_year = ""   #TODO 기준년을 입력하세요
-excel_file = ""   #TODO 엑셀 파일 이름을 입력하세요 (같은 폴더 내에 위치해야함)
+std_year = int(2018)   #TODO 기준년을 입력하세요
+excel_file = str('depreciation_cost.xlsx')   #TODO 엑셀 파일 이름을 입력하세요 (같은 폴더 내에 위치해야함)
 
 column_dict = {
     '자산번호':'id',
@@ -33,6 +33,7 @@ column_dict_rev = {
     'val':'수  량',
     'intro_date': '자본화일',
     'original_price': '총취득원가',
+    'depreciation_cost': '감가상각비'
 }
 
 now = datetime.datetime.now()
@@ -82,9 +83,8 @@ if __name__ == '__main__':
     df_depre['monthly_cost'] = df_depre['original_price']/48
     df_depre['depre_month'] = df_depre.apply(lambda row: get_depre_month(row, std_year=std_year), axis=1)
     df_depre['depreciation_cost'] = df_depre.apply(lambda row: row['monthly_cost'] * row['depre_month'], axis=1)
+    print("%d년 기준 예측 감가상각비 : %d" % (std_year, df_depre['depreciation_cost'].sum()))
+
     df['depreciation_cost'] = df_depre['depreciation_cost'].tolist()
-
-    print(df['depreciation_cost'].sum())
-
     df = df.rename(column_dict_rev, axis=1)
     df.to_excel('./depreciation_cost_result.xlsx', index=False)
