@@ -5,6 +5,7 @@ from keras.layers.merge import dot
 # from misc import get_logger, Option
 import tensorflow as tf
 import os
+import numpy as np
 # opt = Option('./config.json')
 
 
@@ -39,13 +40,56 @@ class Decoder:
         # self.target_weights = tf.placeholder(tf.float32, [None, None], name="target_weights")
 
         # self.dec_cell = tf.Variable([None, self.n_hidden], name='dec_cell')
+        #
+        # def forward_propagation(self, x):
+        #     # The total number of time steps
+        #     T = len(x)
+        #     # During forward propagation we save all hidden states in s because need them later.
+        #     # We add one additional element for the initial hidden, which we set to 0
+        #     s = np.zeros((T + 1, self.hidden_dim))
+        #     s[-1] = np.zeros(self.hidden_dim)
+        #     # The outputs at each time step. Again, we save them for later.
+        #     o = np.zeros((T, self.word_dim))
+        #     # For each time step...
+        #     for t in np.arange(T):
+        #         # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
+        #         s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
+        #         o[t] = softmax(self.V.dot(s[t]))
+        #     return [o, s]
+        #
+        #
+        # def bptt(self, x, y):
+        #     T = len(y)
+        #     # Perform forward propagation
+        #     o, s = self.forward_propagation(x)
+        #     # We accumulate the gradients in these variables
+        #     dLdU = np.zeros(self.U.shape)
+        #     dLdV = np.zeros(self.V.shape)
+        #     dLdW = np.zeros(self.W.shape)
+        #     delta_o = o
+        #     delta_o[np.arange(len(y)), y] -= 1.
+        #     # For each output backwards...
+        #     for t in np.arange(T)[::-1]:
+        #         dLdV += np.outer(delta_o[t], s[t].T)
+        #         # Initial delta calculation: dL/dz
+        #         delta_t = self.V.T.dot(delta_o[t]) * (1 - (s[t] ** 2))
+        #         # Backpropagation through time (for at most self.bptt_truncate steps)
+        #         for bptt_step in np.arange(max(0, t - self.bptt_truncate), t + 1)[::-1]:
+        #             # print "Backpropagation step t=%d bptt step=%d " % (t, bptt_step)
+        #             # Add to gradients at each previous step
+        #             dLdW += np.outer(delta_t, s[bptt_step - 1])
+        #             dLdU[:, x[bptt_step]] += delta_t
+        #             # Update delta for next step dL/dz at t-1
+        #             delta_t = self.W.T.dot(delta_t) * (1 - s[bptt_step - 1] ** 2)
+        #     return [dLdU, dLdV, dLdW]
 
 
-        ''' 1st state to classfy big category'''
         self.Whh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_hidden, self.n_hidden], name="Whh", dtype=tf.float32)
         self.bh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_hidden], name="bh", dtype=tf.float32)
+
+        ''' 1st state to classfy big category'''
 
         self.Wxbh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.encoder_states_size, self.n_hidden], name="Wxbh", dtype=tf.float32)
@@ -56,11 +100,6 @@ class Decoder:
         self.byb = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_b_cate], name="byb", dtype=tf.float32)
 
-        sess = tf.Session()
-        init = tf.global_variables_initializer()
-        sess.run(init)
-        a= sess.run(self.decoder_outputs[0])
-        print(a)
 
         self.dec_cell = tf.nn.tanh(
             tf.add(
@@ -86,7 +125,8 @@ class Decoder:
         self.pred_yb = tf.argmax(self.logits_yb, axis=1)
         print('self.pred_yb', self.pred_yb.shape)       #(2,)
         print(self.decoder_outputs[:, 0].shape)    #(2,)
-        self.crossent_yb = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=tf.squeeze(self.logits_yb), labels=self.decoder_outputs[:, 0]) #TODO self.decoder_outputs[0]
+        self.crossent_yb = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=tf.squeeze(self.logits_yb),
+                                                                          labels=self.decoder_outputs[:, 0]) #TODO self.decoder_outputs[0]
         self.cost_yb = tf.reduce_mean(self.crossent_yb)
 
         correct_pred_yb = tf.equal(self.pred_yb, self.decoder_outputs[:, 0])
@@ -165,6 +205,13 @@ class Decoder:
         self.crossent_yd = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits_yd, labels=self.decoder_outputs[:, 2]) #TODO self.decoder_outputs[0]
         self.cost_yd = tf.reduce_mean(self.crossent_yd)
 
+
+
+        sess = tf.Session()
+        init = tf.global_variables_initializer()
+        sess.run(init)
+        a= sess.run(self.decoder_outputs[0])
+        print(a)
 
 if __name__ == '__main__':
     decoder = Decoder()
