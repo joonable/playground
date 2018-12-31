@@ -42,13 +42,10 @@ class Decoder:
 
 
         ''' 1st state to classfy big category'''
-        # tf.initializers.he_uniform()
-
         self.Whh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_hidden, self.n_hidden], name="Whh", dtype=tf.float32)
         self.bh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_hidden], name="bh", dtype=tf.float32)
-        # self.bh = tf.Variable(tf.float32, [self.n_hidden, self.n_hidden], name="bh")
 
         self.Wxbh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.encoder_states_size, self.n_hidden], name="Wxbh", dtype=tf.float32)
@@ -59,18 +56,21 @@ class Decoder:
         self.byb = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_b_cate], name="byb", dtype=tf.float32)
 
-        # self.Wxbh = tf.Variable(tf.float32, [self.encoder_states_size, self.n_hidden], name="Wxbh")
-        # self.Whyb = tf.Variable(tf.float32, [self.n_hidden, self.n_b_cate], name="Whyb")
-        # self.byb = tf.Variable(tf.float32, [1, self.n_b_cate], name="byb")
-
         sess = tf.Session()
         init = tf.global_variables_initializer()
         sess.run(init)
         a= sess.run(self.decoder_outputs[0])
         print(a)
-        self.dec_cell = tf.nn.tanh(tf.add(tf.add(tf.matmul(self.encoder_states, self.Wxbh), tf.matmul(self.encoder_states, self.Whh)), self.bh))       #TODO self.decoder_inputs[0]
-        # print(tf.matmul(self.encoder_states, self.Wxbh).shape)  #(2, 1, 1024)
-        # print(tf.matmul(self.encoder_states, self.Whh).shape)   #(2, 1, 1024)
+
+        self.dec_cell = tf.nn.tanh(
+            tf.add(
+                tf.add(
+                    tf.matmul(self.encoder_states, self.Wxbh),
+                    tf.matmul(self.encoder_states, self.Whh)),
+                self.bh
+            )
+        )       #TODO self.decoder_inputs[0]
+
         print('self.bh.shape',self.bh.shape)    #(1024, )
         print('self.encoder_states.shape',self.encoder_states.shape)    #(2, 1024)
         print('self.Whh.shape', self.Whh.shape)   #(1024, 1024)
@@ -93,8 +93,6 @@ class Decoder:
         self.accuracy_yb = tf.reduce_mean(tf.cast(correct_pred_yb, "float"))
         tf.summary.scalar('accuracy_yb', self.accuracy_yb)
 
-        # self.dec_cell = tf.argmax(self.logits_yb, axis=2)
-
 
         ''' 2nd state to classfy medium category'''
         self.Wxmh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
@@ -103,10 +101,6 @@ class Decoder:
                                    shape=[self.n_hidden, self.n_m_cate], name="Whym", dtype=tf.float32)
         self.bym = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_m_cate], name="bym", dtype=tf.float32)
-
-        # self.Wxmh = tf.Variable(tf.float32, [self.n_b_cate, self.n_hidden], name="Wxmh")
-        # self.Whym = tf.Variable(tf.float32, [self.n_hidden, self.n_m_cate], name="Whym")
-        # self.bym = tf.Variable(tf.float32, [1, self.n_m_cate], name="bym")
 
         self.dec_cell = tf.nn.tanh(
             tf.add(
@@ -132,10 +126,6 @@ class Decoder:
         self.bys = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_s_cate], name="bys", dtype=tf.float32)
 
-        # self.Wxsh = tf.Variable(tf.float32, [self.n_m_cate, self.n_hidden], name="Wxsh")
-        # self.Whys = tf.Variable(tf.float32, [self.n_hidden, self.n_s_cate], name="Whys")
-        # self.bys = tf.Variable(tf.float32, [1, self.n_s_cate], name="bys")
-
         self.dec_cell = tf.nn.tanh(
             tf.add(
                 tf.add(
@@ -160,10 +150,6 @@ class Decoder:
                                    shape=[self.n_hidden, self.n_d_cate], name="Whyd", dtype=tf.float32)
         self.byd = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
                                    shape=[self.n_d_cate], name="byd", dtype=tf.float32)
-
-        # self.Wxdh = tf.Variable(tf.float32, [self.n_s_cate, self.n_hidden], name="Wxdh")
-        # self.Whyd = tf.Variable(tf.float32, [self.n_hidden, self.n_d_cate], name="Whyd")
-        # self.byd  = tf.Variable(tf.float32, [1, self.n_d_cate], name="Whyd")
 
         self.dec_cell = tf.nn.tanh(
             tf.add(
