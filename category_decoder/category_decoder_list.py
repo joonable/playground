@@ -388,8 +388,7 @@ if __name__ == '__main__':
     #
     #     t_uni = Input((max_len,), name="input_1")
     #     t_uni_embd = embd(t_uni)  # token
-    #
-    #     w_uni = Input((max_len,), name="input_2")
+    # w_uni = Input((max_len,), name="input_2")
     #     w_uni_mat = Reshape((max_len, 1))(w_uni)  # weight
     #
     #     uni_embd_mat = dot([t_uni_embd, w_uni_mat], axes=1)
