@@ -122,10 +122,6 @@ class Decoder:
         self.V = [self.Whyb, self.Whym, self.Whys, self.Whyd]
         self.Vb = [self.byb, self.bym, self.bys, self.byd]
 
-
-
-
-
         self.decoder_states = [self.encoder_states] * 4
         self.decoder_inputs_v2 = [
             self.encoder_states,
@@ -192,6 +188,9 @@ class Decoder:
         dWhyd = tf.zeros(self.Whyd.shape, name="dWhyd", dtype=tf.float32)
         dbyd = tf.zeros(self.byd.shape, name="dbyd", dtype=tf.float32)
 
+        dstates = tf.zeros(self.encoder_states.shape, name="dstates", dtype=tf.float32)
+
+
         dU = [dWxbh, dWxmh, dWxsh, dWxdh]
         dW = [dWhh, dWhh, dWhh, dWhh]
         dWb = [dbh, dbh, dbh, dbh]
@@ -209,7 +208,7 @@ class Decoder:
             # print(self.decoder_states[t])
             # print(tf.matmul(tf.transpose(self.decoder_states[t]), delta_o[t]))
             dV[t] += tf.matmul(tf.transpose(self.decoder_states[t]), delta_o[t])
-
+            dVb[t] -= delta_o[t]
             # Initial delta calculation: dL/dz
             # delta_t = self.V.T.dot(delta_o[t]) * (1-(s[t]**2))
             # print(self.V[t])
@@ -217,27 +216,61 @@ class Decoder:
             # print(self.decoder_states[t])
             # print(1-(tf.square(self.decoder_states[t])))
             # print(tf.matmul(delta_o[t], tf.transpose(self.V[t])))
-            delta_t = tf.matmul(delta_o[t], tf.transpose(self.V[t])) * (1-(tf.square(self.decoder_states[t])))
+            # print('dstates[t] ',dstates[t])
+            dstates = tf.matmul(delta_o[t], tf.transpose(self.V[t])) * (1-(tf.square(self.decoder_states[t])))
+            # print('delta_t', delta_t)
+            # print('dstates[t] ',dstates[t])
 
             # Backpropagation through time (for at most self.bptt_truncate steps)
             for bptt_step in np.arange(0, t+1)[::-1]:
                 # print "Backpropagation step t=%d bptt step=%d " % (t, bptt_step)
                 # Add to gradients at each previous step
-
                 # print(dW[t])
                 # print(delta_t)
                 # print(self.decoder_states[bptt_step-1])
-                dW[t] += tf.matmul(tf.transpose(self.decoder_states[bptt_step-1]), delta_t)
 
+                dW[t] += tf.matmul(tf.transpose(self.decoder_states[bptt_step-1]), dstates)
+                dWb[t] -= dstates
+                #
+                # print('dU[t]', dU[t]) #(3000, 1024)
+                # print('self.decoder_inputs_v2[bptt_step]', self.decoder_inputs_v2[bptt_step]) # 2, 500
+                # print('dstates[t]', dstates) #2, 1024
 
-                print(dU[t])
-                print(delta_t)
+                # print('dU[t][:, self.decoder_inputs_v2[bptt_step]]', dU[t][:, self.decoder_inputs_v2[bptt_step]])
+
                 # dU[:, x[bptt_step]] += delta_t
-                dU[t][:, self.decoder_inputs_v2[bptt_step]] += delta_t
+                # print('tf.matmul(tf.transpose(self.decoder_inputs_v2[bptt_step]), dstates[t])', tf.matmul(tf.transpose(self.decoder_inputs_v2[bptt_step]), dstates))
+
+                dU[bptt_step] += tf.matmul(tf.transpose(self.decoder_inputs_v2[bptt_step]), dstates)
                 # Update delta for next step dL/dz at t-1
                 # delta_t = self.W.T.dot(delta_t) * (1-s[bptt_step-1]**2)
-                delta_t = tf.matmul(self.W[t], delta_t) * (1 - tf.square(self.decoder_states[bptt_step-1]))
+                dstates= tf.matmul(dstates, tf.transpose(self.W[t])) * (1 - tf.square(self.decoder_states[bptt_step-1]))
         return [dU, dV, dW]
+
+        # dprev_s, dU_t, dW_t, dV_t = layers[t].backward(input, prev_s_t, self.U, self.W, self.V, diff_s, dmulv)
+
+        # def backward(self, x, prev_s, U, W, V, diff_s, dmulv):
+        #     self.forward(x, prev_s, U, W, V)
+        #     # dV, dsv = mulGate.backward(V, self.s, dmulv)
+        #     dV = np.asarray(np.dot(np.transpose(np.asmatrix(dmulv)), np.asmatrix(self.s)))
+        #     dsv = np.dot(np.transpose(V), dmulv)
+        #     ds = dsv + diff_s
+        #
+        #     # dadd = activation.backward(self.add, ds)
+        #     dadd = (1.0 - np.square(self.forward(self.add))) * ds
+        #
+        #     # dmulw, dmulu = addGate.backward(self.mulw, self.mulu, dadd)
+        #     dmulw = dadd * np.ones_like(self.mulw)
+        #     dmulu = dadd * np.ones_like(self.mulu)
+        #
+        #     # dW, dprev_s = mulGate.backward(W, prev_s, dmulw)
+        #     dW = np.asarray(np.dot(np.transpose(np.asmatrix(dmulw)), np.asmatrix(prev_s)))
+        #     dprev_s = np.dot(np.transpose(W), dmulw)
+        #
+        #     # dU, dx = mulGate.backward(U, x, dmulu)
+        #     dU = np.asarray(np.dot(np.transpose(np.asmatrix(dmulu)), np.asmatrix(x)))
+        #     dx = np.dot(np.transpose(U), dmulu)
+        #     return (dprev_s, dU, dW, dV)
 
         # prev_s_t = np.zeros(self.hidden_dim)
         # diff_s = np.zeros(self.hidden_dim)
