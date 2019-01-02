@@ -407,4 +407,3 @@ if __name__ == '__main__':
     #     )
     #     model.summary(print_fn=lambda x: self.logger.info(x))
     #     return model
-
