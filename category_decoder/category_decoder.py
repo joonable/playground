@@ -41,47 +41,47 @@ class Decoder:
 
         # self.dec_cell = tf.Variable([None, self.n_hidden], name='dec_cell')
         #
-        # def forward_propagation(self, x):
-        #     # The total number of time steps
-        #     T = len(x)
-        #     # During forward propagation we save all hidden states in s because need them later.
-        #     # We add one additional element for the initial hidden, which we set to 0
-        #     s = np.zeros((T + 1, self.hidden_dim))
-        #     s[-1] = np.zeros(self.hidden_dim)
-        #     # The outputs at each time step. Again, we save them for later.
-        #     o = np.zeros((T, self.word_dim))
-        #     # For each time step...
-        #     for t in np.arange(T):
-        #         # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
-        #         s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
-        #         o[t] = softmax(self.V.dot(s[t]))
-        #     return [o, s]
-        #
-        #
-        # def bptt(self, x, y):
-        #     T = len(y)
-        #     # Perform forward propagation
-        #     o, s = self.forward_propagation(x)
-        #     # We accumulate the gradients in these variables
-        #     dLdU = np.zeros(self.U.shape)
-        #     dLdV = np.zeros(self.V.shape)
-        #     dLdW = np.zeros(self.W.shape)
-        #     delta_o = o
-        #     delta_o[np.arange(len(y)), y] -= 1.
-        #     # For each output backwards...
-        #     for t in np.arange(T)[::-1]:
-        #         dLdV += np.outer(delta_o[t], s[t].T)
-        #         # Initial delta calculation: dL/dz
-        #         delta_t = self.V.T.dot(delta_o[t]) * (1 - (s[t] ** 2))
-        #         # Backpropagation through time (for at most self.bptt_truncate steps)
-        #         for bptt_step in np.arange(max(0, t - self.bptt_truncate), t + 1)[::-1]:
-        #             # print "Backpropagation step t=%d bptt step=%d " % (t, bptt_step)
-        #             # Add to gradients at each previous step
-        #             dLdW += np.outer(delta_t, s[bptt_step - 1])
-        #             dLdU[:, x[bptt_step]] += delta_t
-        #             # Update delta for next step dL/dz at t-1
-        #             delta_t = self.W.T.dot(delta_t) * (1 - s[bptt_step - 1] ** 2)
-        #     return [dLdU, dLdV, dLdW]
+        def forward_propagation(self, x):
+            # The total number of time steps
+            T = len(x)
+            # During forward propagation we save all hidden states in s because need them later.
+            # We add one additional element for the initial hidden, which we set to 0
+            s = np.zeros((T + 1, self.hidden_dim))
+            s[-1] = np.zeros(self.hidden_dim)
+            # The outputs at each time step. Again, we save them for later.
+            o = np.zeros((T, self.word_dim))
+            # For each time step...
+            for t in np.arange(T):
+                # Note that we are indxing U by x[t]. This is the same as multiplying U with a one-hot vector.
+                s[t] = np.tanh(self.U[:, x[t]] + self.W.dot(s[t - 1]))
+                o[t] = softmax(self.V.dot(s[t]))
+            return [o, s]
+
+
+        def bptt(self, x, y):
+            T = len(y)
+            # Perform forward propagation
+            o, s = self.forward_propagation(x)
+            # We accumulate the gradients in these variables
+            dLdU = np.zeros(self.U.shape)
+            dLdV = np.zeros(self.V.shape)
+            dLdW = np.zeros(self.W.shape)
+            delta_o = o
+            delta_o[np.arange(len(y)), y] -= 1.
+            # For each output backwards...
+            for t in np.arange(T)[::-1]:
+                dLdV += np.outer(delta_o[t], s[t].T)
+                # Initial delta calculation: dL/dz
+                delta_t = self.V.T.dot(delta_o[t]) * (1 - (s[t] ** 2))
+                # Backpropagation through time (for at most self.bptt_truncate steps)
+                for bptt_step in np.arange(max(0, t - self.bptt_truncate), t + 1)[::-1]:
+                    # print "Backpropagation step t=%d bptt step=%d " % (t, bptt_step)
+                    # Add to gradients at each previous step
+                    dLdW += np.outer(delta_t, s[bptt_step - 1])
+                    dLdU[:, x[bptt_step]] += delta_t
+                    # Update delta for next step dL/dz at t-1
+                    delta_t = self.W.T.dot(delta_t) * (1 - s[bptt_step - 1] ** 2)
+            return [dLdU, dLdV, dLdW]
 
 
         self.Whh = tf.get_variable(initializer=tf.contrib.layers.xavier_initializer(uniform=False),
