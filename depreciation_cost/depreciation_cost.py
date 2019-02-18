@@ -77,6 +77,7 @@ if __name__ == '__main__':
     df = df.rename(column_dict, axis=1)
     df = df.loc[:, column_dict.values()]
     df_depre = df.loc[:, ['intro_date', 'original_price']]
+
     df_depre = df_depre.apply(lambda row: reset_intro_date(row), axis=1)
 
     df_depre['expired_year'] = df_depre['intro_year']+4
