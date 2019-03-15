@@ -72,9 +72,8 @@ df_words = df_words.sort_values(by=['score'], ascending=False)
 words_candidates_list = df_words.loc[df_words.score > WORDS_THRESHOLD].word.tolist()
 print('words_candidates_list : {}\n'.format(len(words_candidates_list)))
 
-
 print(''' tokens extractor ''')
-# corpus_list = corpus.split()
+# corpus_list = corpus.split()xx
 corpus_list = [text.split() for text in corpus]
 # corpus_list = [text.split() for text in corpus]
 tokens_list = []
